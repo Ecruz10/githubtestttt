@@ -1,1 +1,403 @@
-<h1>Test tESt test test edd</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REPORTE DE CENTRALES RER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f9fafb;
+            color: #333;
+        }
+        header {
+            background-color: #00AEEF;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .report-button {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background-color: #0c0c0c;
+            color: #e1e7e9;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .report-button:hover {
+            background-color: #00AEEF;
+            color: white;
+        }
+        .container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+        }
+        .map {
+            position: relative;
+            width: 900px;
+            height: auto;
+        }
+        .map img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        #chartContainer {
+            width: 80%;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        canvas {
+            width: 100%;
+            max-height: 20vh;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .kpi-card {
+            position: absolute;
+            width: 400px;
+            height: 150px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 8px;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            border: 2px solid #00AEEF;
+        }
+        .kpi-card h3 {
+            background-color: #00AEEF;
+            color: white;
+            font-size: 16px;
+            grid-column: span 3;
+            margin: -10px -10px 8px -10px;
+            padding: 6px;
+            border-radius: 8px 8px 0 0;
+        }
+        .kpi-card i {
+            font-size: 24px;
+            color: #00AEEF;
+            transition: color 0.3s ease;
+        }
+        .kpi-card i:hover {
+            color: #007B9A;
+        }
+        .kpi-card .param {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 8px;
+    align-items: center;
+    text-align: left;
+}
+
+.kpi-card .param i {
+    justify-self: center;
+}
+        .line-diagonal {
+        position: absolute;
+        border-top: 1px solid #0386f1c7; /* Línea diagonal de color */
+        transform-origin: top left; /* Ajusta el origen de la transformación */
+        }
+        #duna { top: -7%; left: -20%; }
+        #quitaracsa { top: 30%; left: -20%; }
+        #yuncan { top: 15%; left: 75%; }
+        #punta { bottom: -0%; left: -20%; }
+        #intipampa { top: 55%; left: 75%; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+        }
+        .modal-content {
+            background-color: white;
+            width: 70%;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close:hover {
+            color: black;
+        }
+        .footer {
+            background-color: #00AEEF;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 12px;
+            display: grid;
+            min-height: 100dvh;
+            grid-template-rows: 
+            auto 1fr auto;
+        }
+        #tableContainer {
+            width: 100%;
+            margin-top: 20px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        th, td {
+            padding: 5px 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #00AEEF;
+            color: white;
+        }
+        
+    </style>
+</head>
+<body>
+    <header>REPORTE DE CENTRALES RER <button class="report-button" onclick="window.location.href='/reports';">Reportes</button></header>
+    <div class="container">
+        <div class="map">
+            <img src="start.png" alt="Mapa Perú">
+            <div class="line-diagonal" style="top: 45%; left: 26%; width: 150px; transform: rotate(20deg);"></div>
+            <div class="line-diagonal" style="top: 15%; left: 25%; width: 150px; transform: rotate(45deg);"></div>
+            <div class="line-diagonal" style="top: 55%; left: 50%; width: 300px; transform: rotate(-25deg);"></div>
+            <div class="line-diagonal" style="top: 85%; left: 63%; width: 150px; transform: rotate(-30deg);"></div>
+            <div class="line-diagonal" style="top: 85%; left: 26%; width: 210px; transform: rotate(-15deg);"></div>
+            
+        <div id="duna" class="kpi-card eolica" onclick="showTrend('Duna/Huambos')">
+            <h3>Duna/Huambos</h3>
+            <div class="param"><i class="fas fa-wind"></i> Viento: 0 m/s</div>
+            <div class="param"><i class="fas fa-bolt"></i> Potencia: 0 MW</div>
+            <div class="param"><i class="fas fa-lightbulb"></i> Factor Carga: 0 %</div>
+            <div class="param"><i class="fas fa-chart-line"></i> Disponibilidad Anual: 99.1 %</div>
+            <div class="param"><i class='fas fa-plug'></i> Aeros ON/OFF: 0/0</div>
+            <div class="param"><i class="fas fa-cogs"></i> Mantenimiento Programado: ---</div>
+        </div>
+        
+        <div id="quitaracsa" class="kpi-card hidraulica" onclick="showTrend('Quitaracsa')">
+            <h3>Quitaracsa</h3>
+            <div class="param"><i class="fas fa-water"></i> Caudal: 6 m³/s</div>
+            <div class="param"><i class="fas fa-bolt"></i> Potencia: 54 MW</div>
+            <div class="param"><i class="fas fa-lightbulb"></i> Factor Carga: 45 %</div>
+            <div class="param"><i class="fas fa-chart-line"></i> Disponibilidad Anual: 73.8 %</div>
+            <div class="param"><i class='fas fa-plug'></i> Turbinas ON/OFF: 1/2</div>
+            <div class="param"><i class="fas fa-cogs"></i> Mantenimiento Programado: ---</div>
+        </div>
+        
+        <div id="yuncan" class="kpi-card hidraulica" onclick="showTrend('Yuncan')">
+            <h3>Yuncan</h3>
+            <div class="param"><i class="fas fa-water"></i> Caudal: 43.4 m³/s</div>
+            <div class="param"><i class="fas fa-bolt"></i> Potencia: 129 MW</div>
+            <div class="param"><i class="fas fa-lightbulb"></i> Factor Carga: 94 %</div>
+            <div class="param"><i class="fas fa-chart-line"></i> Disponibilidad Anual: 88.3 %</div>
+            <div class="param"><i class='fas fa-plug'></i> Turbinas ON/OFF: 3/3</div>
+            <div class="param"><i class="fas fa-cogs"></i> Mantenimiento Programado: ---</div>
+        </div>
+        
+        <div id="punta" class="kpi-card eolica" onclick="showTrend('Punta Lomitas')">
+            <h3>Punta Lomitas</h3>
+            <div class="param"><i class="fas fa-wind"></i> Viento: 8.0 m/s</div>
+            <div class="param"><i class="fas fa-bolt"></i> Potencia: 189 MW</div>
+            <div class="param"><i class="fas fa-lightbulb"></i> Factor Carga: 65 %</div>
+            <div class="param"><i class="fas fa-chart-line"></i> Disponibilidad Anual: 97.7 %</div>
+            <div class="param"><i class='fas fa-plug'></i> Aeros ON/OFF: 57/57</div>
+            <div class="param"><i class="fas fa-cogs"></i> Mantenimiento Programado: ---</div>
+        </div>
+        
+        <div id="intipampa" class="kpi-card solar" onclick="showTrend('Intipampa')">
+            <h3>Intipampa</h3>
+            <div class="param"><i class="fas fa-sun"></i> Irradiancia: 1105.5 W/m²</div>
+            <div class="param"><i class="fas fa-bolt"></i> Potencia: 37 MW</div>
+            <div class="param"><i class="fas fa-lightbulb"></i> Factor Carga: 92 %</div>
+            <div class="param"><i class="fas fa-chart-line"></i> Disponibilidad Anual: 100.0 %</div>
+            <div class="param"><i class='fas fa-solar-panel'></i> Paneles Solares ON/OFF: 1/1</div>
+            <div class="param"><i class="fas fa-cogs"></i> Mantenimiento Programado: ---</div>
+        </div>
+        
+        </div>
+    </div>
+    <div id="trendModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Tendencias</h3>
+            <div id="chartContainer">
+                <canvas id="chart1"></canvas>
+                <canvas id="chart2"></canvas>
+            </div>
+            <h4>Programa Diario Mantenimientos COES</h4>
+            <div id="tableContainer">
+                <table id="trendTable">
+                    <thead>
+                        <tr>
+                            <th>Etiqueta</th>
+                            <th>Inicio</th>
+                            <th>Final</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        const trendData = {'Duna/Huambos': {'etiquetas': ['2024-12-20 06:35', '2024-12-20 06:40', '2024-12-20 06:45', '2024-12-20 06:50', '2024-12-20 06:55', '2024-12-20 07:00', '2024-12-20 07:05', '2024-12-20 07:10', '2024-12-20 07:15', '2024-12-20 07:20', '2024-12-20 07:25', '2024-12-20 07:30', '2024-12-20 07:35', '2024-12-20 07:40', '2024-12-20 07:45', '2024-12-20 07:50', '2024-12-20 07:55', '2024-12-20 08:00', '2024-12-20 08:05', '2024-12-20 08:10', '2024-12-20 08:15', '2024-12-20 08:20', '2024-12-20 08:25', '2024-12-20 08:30', '2024-12-20 08:35', '2024-12-20 08:40', '2024-12-20 08:45', '2024-12-20 08:50', '2024-12-20 08:55', '2024-12-20 09:00'], 'Potencia (MW)': [0], 'Viento (m/s)': [0]}, 'Quitaracsa': {'etiquetas': ['2024-12-20 06:35', '2024-12-20 06:40', '2024-12-20 06:45', '2024-12-20 06:50', '2024-12-20 06:55', '2024-12-20 07:00', '2024-12-20 07:05', '2024-12-20 07:10', '2024-12-20 07:15', '2024-12-20 07:20', '2024-12-20 07:25', '2024-12-20 07:30', '2024-12-20 07:35', '2024-12-20 07:40', '2024-12-20 07:45', '2024-12-20 07:50', '2024-12-20 07:55', '2024-12-20 08:00', '2024-12-20 08:05', '2024-12-20 08:10', '2024-12-20 08:15', '2024-12-20 08:20', '2024-12-20 08:25', '2024-12-20 08:30', '2024-12-20 08:35', '2024-12-20 08:40', '2024-12-20 08:45', '2024-12-20 08:50', '2024-12-20 08:55', '2024-12-20 09:00'], 'Caudal (m³/s)': [6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955, 6.927837397024955], 'Potencia (MW)': [15.6, 14.733333333333334, 15.700000000000001, 15.566666666666666, 15.4, 15.3, 15.433333333333334, 15.266666666666666, 16.083333333333336, 16.333333333333336, 16.033333333333335, 15.533333333333331, 15.566666666666666, 15.700000000000001, 14.983333333333334, 15.116666666666665, 15.933333333333332, 15.716666666666669, 15.466666666666665, 15.766666666666666, 15.833333333333332, 15.466666666666669, 16.033333333333335, 15.966666666666665, 16.583333333333336, 28.8, 53.766666666666666, 54.41666666666667, 54.166666666666664, 54.1]}, 'Yuncan': {'etiquetas': ['2024-12-20 06:35', '2024-12-20 06:40', '2024-12-20 06:45', '2024-12-20 06:50', '2024-12-20 06:55', '2024-12-20 07:00', '2024-12-20 07:05', '2024-12-20 07:10', '2024-12-20 07:15', '2024-12-20 07:20', '2024-12-20 07:25', '2024-12-20 07:30', '2024-12-20 07:35', '2024-12-20 07:40', '2024-12-20 07:45', '2024-12-20 07:50', '2024-12-20 07:55', '2024-12-20 08:00', '2024-12-20 08:05', '2024-12-20 08:10', '2024-12-20 08:15', '2024-12-20 08:20', '2024-12-20 08:25', '2024-12-20 08:30', '2024-12-20 08:35', '2024-12-20 08:40', '2024-12-20 08:45', '2024-12-20 08:50', '2024-12-20 08:55', '2024-12-20 09:00'], 'Caudal (m³/s)': [40.0, 40.0, 40.233333333333334, 40.016666666666666, 40.0, 40.150000000000006, 39.68333333333334, 39.53333333333333, 40.11666666666667, 40.25, 40.46666666666667, 40.483333333333334, 40.38333333333334, 40.5, 40.883333333333326, 41.483333333333334, 40.9, 40.916666666666664, 41.61666666666667, 41.63333333333333, 41.75, 42.016666666666666, 42.46666666666666, 43.233333333333334, 44.0, 43.36666666666667, 43.11666666666666, 43.016666666666666, 43.4, 43.4], 'Potencia (MW)': [130.1, 128.43333333333334, 129.66666666666669, 129.66666666666669, 129.63333333333333, 129.41666666666669, 129.5, 129.36666666666667, 130.66666666666669, 130.88333333333333, 130.13333333333335, 129.46666666666664, 129.98333333333335, 129.9, 128.98333333333335, 129.3, 130.20000000000002, 130.03333333333333, 129.63333333333333, 130.16666666666669, 130.11666666666667, 129.65, 131.16666666666669, 130.13333333333333, 131.48333333333332, 130.16666666666669, 128.36666666666667, 129.46666666666667, 129.39999999999998, 129.20000000000002]}, 'Punta Lomitas': {'etiquetas': ['2024-12-20 06:35', '2024-12-20 06:40', '2024-12-20 06:45', '2024-12-20 06:50', '2024-12-20 06:55', '2024-12-20 07:00', '2024-12-20 07:05', '2024-12-20 07:10', '2024-12-20 07:15', '2024-12-20 07:20', '2024-12-20 07:25', '2024-12-20 07:30', '2024-12-20 07:35', '2024-12-20 07:40', '2024-12-20 07:45', '2024-12-20 07:50', '2024-12-20 07:55', '2024-12-20 08:00', '2024-12-20 08:05', '2024-12-20 08:10', '2024-12-20 08:15', '2024-12-20 08:20', '2024-12-20 08:25', '2024-12-20 08:30', '2024-12-20 08:35', '2024-12-20 08:40', '2024-12-20 08:45', '2024-12-20 08:50', '2024-12-20 08:55', '2024-12-20 09:00'], 'Viento (m/s)': [7.8, 7.166666666666667, 8.95, 7.6, 7.7, 7.016666666666667, 6.7666666666666675, 6.766666666666667, 7.25, 6.1, 7.833333333333333, 6.433333333333334, 6.866666666666666, 6.8, 6.966666666666667, 6.783333333333333, 6.666666666666667, 6.183333333333334, 6.333333333333333, 7.366666666666667, 8.85, 7.15, 7.033333333333334, 8.649999999999999, 8.5, 8.299999999999999, 7.05, 8.166666666666668, 6.900000000000001, 8.0], 'Potencia (MW)': [119754.0, 125041.66666666667, 133479.33333333334, 139532.1666666667, 140798.33333333334, 147442.83333333334, 153600.8333333333, 157936.0, 158381.5, 158756.6666666667, 160305.0, 161950.0, 156754.0, 153626.0, 158012.83333333334, 167982.16666666666, 172367.33333333334, 172378.5, 176457.5, 178666.66666666666, 182478.0, 183677.0, 183550.66666666666, 182819.1666666667, 186556.83333333334, 190031.66666666666, 192233.83333333334, 190168.66666666666, 189869.33333333334, 189524.0]}, 'Intipampa': {'etiquetas': ['2024-12-20 06:35', '2024-12-20 06:40', '2024-12-20 06:45', '2024-12-20 06:50', '2024-12-20 06:55', '2024-12-20 07:00', '2024-12-20 07:05', '2024-12-20 07:10', '2024-12-20 07:15', '2024-12-20 07:20', '2024-12-20 07:25', '2024-12-20 07:30', '2024-12-20 07:35', '2024-12-20 07:40', '2024-12-20 07:45', '2024-12-20 07:50', '2024-12-20 07:55', '2024-12-20 08:00', '2024-12-20 08:05', '2024-12-20 08:10', '2024-12-20 08:15', '2024-12-20 08:20', '2024-12-20 08:25', '2024-12-20 08:30', '2024-12-20 08:35', '2024-12-20 08:40', '2024-12-20 08:45', '2024-12-20 08:50', '2024-12-20 08:55', '2024-12-20 09:00'], 'Irradiancia (W/m²)': [460.0, 466.40000000000003, 354.48333333333335, 367.41666666666663, 451.06666666666666, 432.23333333333335, 618.6, 834.6333333333333, 928.4666666666667, 757.6500000000001, 852.5666666666666, 847.1666666666667, 567.3833333333333, 466.26666666666665, 830.5833333333333, 1010.9666666666667, 898.3666666666667, 993.9666666666667, 886.4166666666666, 1069.6000000000001, 1132.25, 1183.8833333333332, 1184.8999999999999, 896.4333333333333, 699.1833333333334, 889.8666666666667, 851.8500000000001, 1032.1333333333334, 1088.2666666666667, 1105.5], 'Potencia (MW)': [17.4, 17.266666666666666, 13.083333333333332, 13.566666666666666, 17.066666666666666, 16.25, 21.016666666666666, 30.066666666666666, 34.016666666666666, 27.116666666666667, 30.53333333333333, 30.28333333333333, 20.266666666666666, 16.633333333333333, 29.733333333333334, 35.88333333333333, 32.166666666666664, 34.86666666666667, 31.566666666666666, 37.03333333333333, 38.733333333333334, 39.28333333333333, 38.86666666666667, 31.483333333333334, 23.366666666666667, 32.23333333333333, 29.366666666666664, 36.11666666666667, 37.199999999999996, 37.5]}};
+        const mantenimientosData = {'Duna/Huambos': {'etiquetas': [], 'INICIO': [], 'FINAL': [], 'DESCRIPCION': []}, 'Quitaracsa': {'etiquetas': ['Quitaracsa', 'Quitaracsa', 'Quitaracsa', 'Quitaracsa', 'Quitaracsa', 'Quitaracsa'], 'INICIO': ['2024-12-13 00:00:00', '2024-12-12 23:00:00', '2024-12-12 00:00:00', '2024-12-10 06:00:00', '2024-12-10 06:00:00', '2024-12-10 06:00:00'], 'FINAL': ['2024-12-13 06:00:00', '2024-12-13 00:00:00', '2024-12-12 23:00:00', '2024-12-10 19:00:00', '2024-12-10 19:00:00', '2024-12-10 19:00:00'], 'DESCRIPCION': ['Pruebas de Potencia efectiva', 'ENSAYO DE POTENCIA EFECTIVA', 'LLENAR Y MANTENER EL NIVEL DE EMBALSE EN 2349.5 MSNM HASTA EL INICIO DE LA PRUEBA DE POTENCIA EFECTIVA', 'LEVANTAMIENTO PUNCH LIST TRANSFORMADOR PRINCIPAL G1', 'END Y CD RODETE G1', 'LIMPIEZA ENFRIADORES GENERADOR TURBINA']}, 'Yuncan': {'etiquetas': ['Yuncan', 'Yuncan', 'Yuncan', 'Yuncan', 'Yuncan', 'Yuncan', 'Yuncan'], 'INICIO': ['2024-12-15 00:00:00', '2024-12-14 00:00:00', '2024-12-12 09:00:00', '2024-12-08 00:00:00', '2024-12-08 00:00:00', '2024-12-02 00:00:00', '2024-12-01 00:00:00'], 'FINAL': ['2024-12-15 16:00:00', '2024-12-14 16:00:00', '2024-12-12 15:00:00', '2024-12-08 13:00:00', '2024-12-08 13:00:00', '2024-12-03 00:00:00', '2024-12-02 00:00:00'], 'DESCRIPCION': ['END Y CD TURBINA', 'END Y CD TURBINA', 'INSPECCION DE LA SOLERA DE LA COMPUERTA B4, SE REQUIERE EL NIVEL DEL EMBALSE HUALLAMAYO EN LA COTA 2409.2 MSNM (630 Mm3)', 'MANTENIMIENTO POZO DE ENFRIAMIENTO', 'CAMBIO DE RESORTE SEVOMOTOR SIST. VARILLAJE DEFLECTORES', 'Mantenimiento correctivo por falla del regulador de voltaje AVR', 'Mantenimiento correctivo por falla del regulador de voltaje AVR']}, 'Punta Lomitas': {'etiquetas': ['Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas', 'Punta Lomitas'], 'INICIO': ['2024-12-19 00:00:00', '2024-12-19 00:00:00', '2024-12-19 00:00:00', '2024-12-18 00:00:00', '2024-12-18 00:00:00', '2024-12-18 00:00:00', '2024-12-17 00:00:00', '2024-12-17 00:00:00', '2024-12-17 00:00:00', '2024-12-16 00:00:00', '2024-12-16 00:00:00', '2024-12-16 00:00:00', '2024-12-15 00:00:00', '2024-12-15 00:00:00', '2024-12-15 00:00:00', '2024-12-14 00:00:00', '2024-12-14 00:00:00', '2024-12-14 00:00:00', '2024-12-13 00:00:00', '2024-12-13 00:00:00', '2024-12-13 00:00:00', '2024-12-12 00:00:00', '2024-12-12 00:00:00', '2024-12-12 00:00:00', '2024-12-11 00:00:00', '2024-12-11 00:00:00', '2024-12-11 00:00:00', '2024-12-10 00:00:00', '2024-12-10 00:00:00', '2024-12-10 00:00:00', '2024-12-08 00:00:00', '2024-12-08 00:00:00', '2024-12-08 00:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-06 08:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-05 00:00:00', '2024-12-05 00:00:00', '2024-12-05 00:00:00', '2024-12-05 00:00:00', '2024-12-05 08:00:00', '2024-12-04 08:00:00', '2024-12-04 00:00:00', '2024-12-04 00:00:00', '2024-12-04 08:00:00', '2024-12-04 00:00:00', '2024-12-04 00:00:00', '2024-12-04 08:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-03 08:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-03 08:00:00', '2024-12-02 00:00:00', '2024-12-02 00:00:00', '2024-12-02 08:00:00', '2024-12-02 00:00:00', '2024-12-02 00:00:00', '2024-12-02 00:00:00', '2024-12-01 00:00:00', '2024-12-01 00:00:00', '2024-12-01 00:00:00'], 'FINAL': ['2024-12-20 00:00:00', '2024-12-20 00:00:00', '2024-12-20 00:00:00', '2024-12-19 00:00:00', '2024-12-19 00:00:00', '2024-12-19 00:00:00', '2024-12-18 00:00:00', '2024-12-18 00:00:00', '2024-12-18 00:00:00', '2024-12-17 00:00:00', '2024-12-17 00:00:00', '2024-12-17 00:00:00', '2024-12-16 00:00:00', '2024-12-16 00:00:00', '2024-12-16 00:00:00', '2024-12-15 00:00:00', '2024-12-15 00:00:00', '2024-12-15 00:00:00', '2024-12-14 00:00:00', '2024-12-14 00:00:00', '2024-12-14 00:00:00', '2024-12-13 00:00:00', '2024-12-13 00:00:00', '2024-12-13 00:00:00', '2024-12-12 00:00:00', '2024-12-12 00:00:00', '2024-12-12 00:00:00', '2024-12-11 00:00:00', '2024-12-11 00:00:00', '2024-12-11 00:00:00', '2024-12-09 00:00:00', '2024-12-09 00:00:00', '2024-12-09 00:00:00', '2024-12-07 00:00:00', '2024-12-07 00:00:00', '2024-12-06 17:00:00', '2024-12-07 00:00:00', '2024-12-07 00:00:00', '2024-12-07 00:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-06 00:00:00', '2024-12-05 17:00:00', '2024-12-04 17:00:00', '2024-12-05 00:00:00', '2024-12-05 00:00:00', '2024-12-04 17:00:00', '2024-12-05 00:00:00', '2024-12-05 00:00:00', '2024-12-04 17:00:00', '2024-12-04 00:00:00', '2024-12-04 00:00:00', '2024-12-04 00:00:00', '2024-12-03 17:00:00', '2024-12-04 00:00:00', '2024-12-04 00:00:00', '2024-12-03 17:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-02 17:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-03 00:00:00', '2024-12-02 00:00:00', '2024-12-02 00:00:00', '2024-12-02 00:00:00'], 'DESCRIPCION': ['Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS LIMITADO A 175 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'MANTENIMIENTO PRUEBAS ELECTRICAS BANCO DE CONDENSADORES 02 SE PUNTA LOMITAS', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS LIMITADO A 175 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'MANTENIMIENTO PRUEBAS ELECTRICAS BANCO DE CONDENSADORES 02 SE PUNTA LOMITAS', 'MANTENIMIENTO PRUEBAS ELECTRICAS BANCO DE CONDENSADORES 01 SE PUNTA LOMITAS', 'CENTRAL PUNTA LOMITAS LIMITADO A 175 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Mantenimiento, ordenamiento y rotulado de cableado de tablero de comunicaciones. Enlace de datos SE Punta Lomitas ENG Y03 (Perdida de señales envio al COES, en tiempo real.)', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Actualización de software y firmware de los switches, router y Scada en SE Punta Lomitas (riesgo de pérdida de comunicación en equipos de control de supervisión y monitoreo)', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'Actualización de software y firmware de los switches, router y Scada en SE Punta Lomitas (riesgo de pérdida de comunicación en equipos de control de supervisión y monitoreo)', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS LIMITADO A 175 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'MANTENIMIENTO PRUEBAS ELECTRICAS BANCO DE CONDENSADORES 01 SE PUNTA LOMITAS', 'CENTRAL PUNTA LOMITAS LIMITADO A 175 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 193 MW debido a reparación de 02 aerogeneradores por punch list y atención de alarmas 05 aerogeneradores entre 08 y 18 hrs', 'Actualización de software y firmware de los switches, router y Scada en SE Punta Lomitas (riesgo de pérdida de comunicación en equipos de control de supervisión y monitoreo)', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'Central Punta Lomitas limitado a 27 MW debido a reparación de 01 aerogenerador por punch list y atencion de alarmas 01 aerogenerador entre 08 y 18 hrs', 'CENTRAL PUNTA LOMITAS EXP LIMITADO A 25 MW POR REPARACION TEMPORAL DE CABLE DE ALIMENTACIÓN LADO SECUNDARIO 33KV TRANSFORMADORES TP-1, TP-2', 'Limitado a 100 MW por reparación temporal de cable de alimentación lado secundario 33kV']}, 'Intipampa': {'etiquetas': [], 'INICIO': [], 'FINAL': [], 'DESCRIPCION': []}};
+        let trendCharts = [];
+
+        const COLORS = {
+            'Potencia (MW)': 'rgba(203, 47, 57, 0.8)',
+            'Caudal (m³/s)': 'rgba(111, 183, 214, 1)',
+            'Viento (m/s)': 'rgba(72, 181, 163, 1)',
+            'Irradiancia (W/m²)': 'rgba(255, 237, 81, 1)'
+        };
+
+        function showTrend(plant) {
+            const modal = document.getElementById("trendModal");
+            const chartContainer = document.getElementById("chartContainer");
+            const tableContainer = document.getElementById("tableContainer");
+            document.getElementById("modalTitle").textContent = `Tendencias ${plant}`;
+
+            chartContainer.innerHTML = "";
+            tableContainer.innerHTML = "";
+            trendCharts.forEach(chart => chart.destroy());
+            trendCharts = [];
+
+            Object.keys(trendData[plant]).filter(key => key !== 'etiquetas').forEach(datasetKey => {
+                const canvas = document.createElement("canvas");
+                canvas.style.marginBottom = "20px";
+                chartContainer.appendChild(canvas);
+
+                const ctx = canvas.getContext("2d");
+                const parentWidth = chartContainer.offsetWidth / 2;
+                canvas.width = parentWidth;
+                canvas.height = Math.min(parentWidth * 3, 600);
+
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: trendData[plant]['etiquetas'],
+                        datasets: [{
+                            label: datasetKey,
+                            data: trendData[plant][datasetKey],
+                            borderColor: COLORS[datasetKey] || 'rgba(0, 0, 0, 1)',
+                            backgroundColor: COLORS[datasetKey] || 'rgba(0, 0, 0, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        const date = new Date(trendData[plant]['etiquetas'][index]);
+                                        const hours = date.getHours().toString().padStart(2, '0');
+                                        const minutes = date.getMinutes().toString().padStart(2, '0');
+                                        const day = date.getDate().toString().padStart(2, '0');
+                                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+
+                                        if (hours === '00' && minutes === '00') return `${day}/${month}`;
+                                        if (minutes === '00') {
+                                            return index === 0 || trendData[plant]['etiquetas'][index - 1].split(' ')[0] !== trendData[plant]['etiquetas'][index].split(' ')[0]
+                                                ? `${hours}:${minutes}\n${day}/${month}`
+                                                : `${hours}:${minutes}`;
+                                        }
+                                        return null;
+                                    },
+                                    autoSkip: false,
+                                    maxTicksLimit: Math.floor(trendData[plant]['etiquetas'].length / 60),
+                                    font: {
+                                        weight: context => {
+                                            const date = new Date(trendData[plant]['etiquetas'][context.index]);
+                                            return date.getHours() === 0 && date.getMinutes() === 0 ? 'bold' : 'normal';
+                                        }
+                                    }
+                                }
+                            },
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+                trendCharts.push(chart);
+            });
+
+            // Generate maintenance table
+            const table = document.createElement("table");
+            const thead = document.createElement("thead");
+            const tbody = document.createElement("tbody");
+
+            thead.innerHTML = `
+                <tr>
+                    <th>CENTRAL</th>
+                    <th>INICIO</th>
+                    <th>FINAL</th>
+                    <th>DESCRIPCIÓN</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            if (mantenimientosData[plant]?.etiquetas?.length) {
+                mantenimientosData[plant].etiquetas.forEach((etiqueta, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${etiqueta}</td>
+                            <td>${mantenimientosData[plant].INICIO[index]}</td>
+                            <td>${mantenimientosData[plant].FINAL[index]}</td>
+                            <td>${mantenimientosData[plant].DESCRIPCION[index]}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No hay mantenimientos programados para el día de hoy</td></tr>';
+            }
+
+            table.appendChild(tbody);
+            tableContainer.appendChild(table);
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("trendModal").style.display = "none";
+        }
+    </script>
+    <div class="footer">&copy; 2024 Reporte RER</div>
+</body>
+</html>
